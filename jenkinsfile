@@ -2,9 +2,6 @@ pipeline {
     agent {
         label 'Jenkins-Agent'
     }
-    tools {
-        jdk 'Java17'
-    }
     environment {
         APP_NAME = "flight"
         RELEASE = "1.0.0"
