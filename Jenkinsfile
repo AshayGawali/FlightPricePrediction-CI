@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label "Master"
-    }
+    agent any
     environment {
         APP_NAME = "flight"
         RELEASE = "1.0.0"
