@@ -20,7 +20,7 @@ pipeline {
                 git branch: 'main', credentialsId: 'GitHub', url: 'https://github.com/gawaliashay/FlightPricePrediction-CI'
             }
         }
-        /*stage("Build & Push Docker Image") {
+        stage("Build & Push Docker Image") {
             steps {
                 script {
                     docker.withRegistry('', DOCKER_PASS) {
@@ -47,7 +47,7 @@ pipeline {
                     sh "docker rmi ${IMAGE_NAME}:latest"
                 }
             }
-        }*/
+        }
         stage("Trigger CD Pipeline") {
             steps {
                 script {
