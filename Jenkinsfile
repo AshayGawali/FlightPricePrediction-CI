@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label "Any"
+        label "Master"
     }
     environment {
         APP_NAME = "flight"
