@@ -1,6 +1,6 @@
 pipeline {
     agent {
-        label 'Jenkins-Agent'
+        label "Any"
     }
     environment {
         APP_NAME = "flight"
