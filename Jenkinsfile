@@ -8,6 +8,8 @@ pipeline {
         IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
+        JENKINS_MASTER_DNS_URL = "ec2-3-110-124-206.ap-south-1.compute.amazonaws.com"
+        CD_JOB_NAME = "FlightPricePrediction-CD"
     }
     stages {
         stage("Cleanup Workspace") {
@@ -51,7 +53,7 @@ pipeline {
         stage("Trigger CD Pipeline") {
             steps {
                 script {
-                    sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' 'ec2-3-111-34-16.ap-south-1.compute.amazonaws.com:8080/job/FlightPricePrediction-CD/buildWithParameters?token=mlops-token'"
+                    sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' '${JENKINS_MASTER_DNS_URL}:8080/job/${CD_JOB_NAME}/buildWithParameters?token=mlops-token'"
                     /*curl --user "username:<JENKINS_API_TOKEN>" -X POST -H "Content-Type: application/x-www-form-urlencoded" --data "parameter_name=parameter_value" "<jenkinsMaster_url>/job/<job_name>/buildWithParameters?token=<your_api_token>&<parameter_name>=<parameter_value>" */
                 }
             }
