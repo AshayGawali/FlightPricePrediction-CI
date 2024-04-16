@@ -5,7 +5,7 @@ pipeline {
         RELEASE = "1.0.0"
         DOCKER_USER = "ashay1987"
         DOCKER_PASS = "DockerHub"
-        IMAGE_NAME = "${DOCKER_USER}" + "/" + "${APP_NAME}"
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
         JENKINS_MASTER_DNS_URL = "ec2-3-111-30-182.ap-south-1.compute.amazonaws.com"
