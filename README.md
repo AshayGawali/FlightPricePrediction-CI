@@ -1,1 +1,1 @@
-﻿# Flight-Price-Predictor-Application
+﻿# Flight-Price-Predictor
