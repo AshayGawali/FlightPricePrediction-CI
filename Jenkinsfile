@@ -1,14 +1,14 @@
 pipeline {
     agent any
     environment {
-        APP_NAME = "flight-Pred"
+        APP_NAME = "flight-pred"
         RELEASE = "1.0.0"
         DOCKER_USER = "ashay1987"
         DOCKER_PASS = "DockerHub"
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
-        JENKINS_MASTER_DNS_URL = "ec2-3-111-30-182.ap-south-1.compute.amazonaws.com"
+        JENKINS_MASTER_DNS_URL = "ec2-13-232-146-248.ap-south-1.compute.amazonaws.com"
         CD_JOB_NAME = "FlightPricePrediction-CD"
     }
     stages {
