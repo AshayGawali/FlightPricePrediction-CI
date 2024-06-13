@@ -58,7 +58,7 @@ pipeline {
                 }
             }
         }
-    }
+    }/*
     post {
         failure {
             emailext body: '''${SCRIPT, template="groovy-html.template"}''',
@@ -70,5 +70,5 @@ pipeline {
             subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - Successful",
             mimeType: 'text/html', to: "gawali.ashay@gmail.com"
         }
-    }
+    }*/
 }
