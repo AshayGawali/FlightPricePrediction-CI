@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        APP_NAME = "flight-pred"
+        APP_NAME = "airline"
         RELEASE = "1.0.0"
         DOCKER_USER = "ashay1987"
         DOCKER_PASS = "DockerHub"
