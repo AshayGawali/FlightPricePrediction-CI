@@ -112,17 +112,30 @@ pipeline {
         }
 
         stage("Trigger CD Pipeline") {
-            when {
-                expression { currentBuild.result == 'SUCCESS' }
-            }
-            steps {
-                echo "Triggering CD pipeline with image tag: ${IMAGE_TAG}"
-                build job: env.CD_JOB_NAME, 
-                      parameters: [string(name: 'IMAGE_TAG', value: env.IMAGE_TAG)],
-                      wait: false
+    steps {
+        withCredentials([string(credentialsId: 'jenkins-api-token', variable: 'JENKINS_API_TOKEN')]) {
+            script {
+                // Add error handling and logging
+                echo "Attempting to trigger CD pipeline with IMAGE_TAG=${IMAGE_TAG}"
+                
+                try {
+                    sh """
+                        curl -v -k --user admin:${JENKINS_API_TOKEN} \
+                        -X POST \
+                        -H 'cache-control: no-cache' \
+                        -H 'content-type: application/x-www-form-urlencoded' \
+                        --data 'IMAGE_TAG=${IMAGE_TAG}' \
+                        '${JENKINS_MASTER_URL}/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN'
+                    """
+                    echo "Successfully triggered CD pipeline"
+                } catch (Exception e) {
+                    echo "Failed to trigger CD pipeline: ${e.getMessage()}"
+                    currentBuild.result = 'UNSTABLE'
+                }
             }
         }
     }
+}
 /*
     post {
         always {
