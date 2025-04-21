@@ -112,37 +112,36 @@ pipeline {
         }
 
         stage("Trigger CD Pipeline") {
-            steps {
-                withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
-                    script {
-                        echo "Attempting to trigger CD pipeline with IMAGE_TAG=${IMAGE_TAG}"
-                        
-                        // Safe way to handle credentials in sh commands
-                        def curlCmd = """
-                            curl -v -k --user admin:${JENKINS_API_TOKEN} \\
-                            -X POST \\
-                            -H 'cache-control: no-cache' \\
-                            -H 'content-type: application/x-www-form-urlencoded' \\
-                            --data 'IMAGE_TAG=${IMAGE_TAG}' \\
-                            '${JENKINS_MASTER_URL}/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN'
-                        """
-                        
-                        // Execute and check response
-                        def status = sh(
-                            script: curlCmd,
-                            returnStatus: true
-                        )
-                        
-                        if (status != 0) {
-                            error("Failed to trigger CD pipeline - curl returned status ${status}")
-                        } else {
-                            echo "Successfully triggered CD pipeline"
-                        }
-                    }
+    steps {
+        withCredentials([string(credentialsId: 'jenkins-api-token', variable: 'JENKINS_API_TOKEN')]) {
+            script {
+                echo "Attempting to trigger CD pipeline with IMAGE_TAG=${IMAGE_TAG}"
+                
+                // Secure way to handle the curl command with credentials
+                def response = sh(
+                    script: """
+                        curl -sS -k -w '%{http_code}' \
+                        --user admin:${JENKINS_API_TOKEN} \
+                        -X POST \
+                        -H 'cache-control: no-cache' \
+                        -H 'content-type: application/x-www-form-urlencoded' \
+                        --data 'IMAGE_TAG=${IMAGE_TAG}' \
+                        '${JENKINS_MASTER_URL}/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN' \
+                        -o /dev/null
+                    """,
+                    returnStdout: true
+                ).trim()
+                
+                // Check the HTTP status code
+                if (response != "201" && response != "200") {
+                    error("Failed to trigger CD pipeline - HTTP status ${response}")
+                } else {
+                    echo "Successfully triggered CD pipeline (HTTP ${response})"
                 }
             }
         }
-/*
+    }
+}/*
     post {
         always {
             cleanWs()
