@@ -66,17 +66,9 @@ pipeline {
 
         stage("Trigger CD Pipeline") {
             steps {
-                withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
-                    script {
-                        sh '''
-                            curl -v -k --user admin:$JENKINS_API_TOKEN \
-                            -X POST -H 'cache-control: no-cache' \
-                            -H 'content-type: application/x-www-form-urlencoded' \
-                            --data "IMAGE_TAG=${IMAGE_TAG}" \
-                            http://ec2-13-232-237-15.ap-south-1.compute.amazonaws.com:8080/job/FlightPricePrediction-CD/buildWithParameters?token=MLOPS-TOKEN
-                        '''
-
-                    }
+                script {
+                    sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' '${JENKINS_MASTER_DNS_URL}:8080/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN'"
+                    /*curl --user "username:<JENKINS_API_TOKEN>" -X POST -H "Content-Type: application/x-www-form-urlencoded" --data "parameter_name=parameter_value" "<jenkinsMaster_url>/job/<job_name>/buildWithParameters?token=<your_api_token>&<parameter_name>=<parameter_value>" */
                 }
             }
         }
