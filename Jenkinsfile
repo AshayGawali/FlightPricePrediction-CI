@@ -65,11 +65,11 @@ pipeline {
 
         stage("Trigger CD Pipeline") {
             steps {
-                withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_TOKEN')]) {
+                withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
                     script {
                         def triggerUrl = "http://${JENKINS_MASTER_DNS_URL}:8080/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN"
                         sh '''
-                            curl -v -k --user admin:$JENKINS_TOKEN \
+                            curl -v -k --user admin:$JENKINS_API_TOKEN \
                             -X POST -H 'cache-control: no-cache' \
                             -H 'content-type: application/x-www-form-urlencoded' \
                             --data 'IMAGE_TAG=${IMAGE_TAG}' ${triggerUrl}
