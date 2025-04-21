@@ -113,7 +113,7 @@ pipeline {
 
         stage("Trigger CD Pipeline") {
     steps {
-        withCredentials([string(credentialsId: 'jenkins-api-token', variable: 'JENKINS_API_TOKEN')]) {
+        withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
             script {
                 // Add error handling and logging
                 echo "Attempting to trigger CD pipeline with IMAGE_TAG=${IMAGE_TAG}"
