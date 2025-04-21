@@ -40,12 +40,13 @@ pipeline {
                 withCredentials([usernamePassword(credentialsId: 'DockerHub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
                     script {
                         def imageName = "${DOCKER_USER}/${APP_NAME}"
-                        sh '''
+                        sh """
                             docker run -v /var/run/docker.sock:/var/run/docker.sock \
-                            aquasec/trivy image ${DOCKER_USER}/${APP_NAME}:latest \
+                            aquasec/trivy image ${imageName}:latest \
                             --no-progress --scanners vuln --exit-code 0 \
                             --severity HIGH,CRITICAL --format table
-                        '''
+                        """
+
                     }
                 }
             }
@@ -67,13 +68,14 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
                     script {
-                        sh """
-                            curl -v -k --user admin:${JENKINS_API_TOKEN} \\
-                            -X POST -H 'cache-control: no-cache' \\
-                            -H 'content-type: application/x-www-form-urlencoded' \\
-                            --data 'IMAGE_TAG=${IMAGE_TAG}' \\
-                            http://${JENKINS_MASTER_DNS_URL}:8080/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN
-                        """
+                        sh '''
+                            curl -v -k --user admin:$JENKINS_API_TOKEN \
+                            -X POST -H 'cache-control: no-cache' \
+                            -H 'content-type: application/x-www-form-urlencoded' \
+                            --data "IMAGE_TAG=${IMAGE_TAG}" \
+                            http://ec2-13-232-237-15.ap-south-1.compute.amazonaws.com:8080/job/FlightPricePrediction-CD/buildWithParameters?token=MLOPS-TOKEN
+                        '''
+
                     }
                 }
             }
