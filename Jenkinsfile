@@ -8,7 +8,7 @@ pipeline {
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
-        JENKINS_MASTER_DNS_URL = "ec2-3-111-214-208.ap-south-1.compute.amazonaws.com"
+        JENKINS_MASTER_DNS_URL = "ec2-3-111-214-208.ap-south-1.compute.amazonaws.com:8080"
         CD_JOB_NAME = "FlightPricePrediction-CD"
     }
     stages {
