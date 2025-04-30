@@ -3,7 +3,11 @@ pipeline {
     environment {
         APP_NAME = "airline"
         RELEASE = "1.0.0"
+        DOCKER_USER = "ashay1987"
+        DOCKER_PASS = "DockerHub"
+        IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
+        JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
         JENKINS_MASTER_URL = "https://ec2-3-111-214-208.ap-south-1.compute.amazonaws.com:8080"
         CD_JOB_NAME = "FlightPricePrediction-CD"
         EMAIL_RECIPIENT = "gawali.ashay@gmail.com"
