@@ -49,12 +49,13 @@ pipeline {
                     sh "docker rmi ${IMAGE_NAME}:latest"
                 }
             }
-        }/*
+        }
+        /*
         stage("Trigger CD Pipeline") {
             steps {
                 script {
                     sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' '${JENKINS_MASTER_DNS_URL}:8080/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN'"
-                    /*curl --user "username:<JENKINS_API_TOKEN>" -X POST -H "Content-Type: application/x-www-form-urlencoded" --data "parameter_name=parameter_value" "<jenkinsMaster_url>/job/<job_name>/buildWithParameters?token=<your_api_token>&<parameter_name>=<parameter_value>" */
+                    // curl --user "username:<JENKINS_API_TOKEN>" -X POST -H "Content-Type: application/x-www-form-urlencoded" --data "parameter_name=parameter_value" "<jenkinsMaster_url>/job/<job_name>/buildWithParameters?token=<your_api_token>&<parameter_name>=<parameter_value>"
                 }
             }
         }
@@ -70,5 +71,6 @@ pipeline {
             subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - Successful",
             mimeType: 'text/html', to: "gawali.ashay@gmail.com"
         }
-    }*/
+    }
 }
+*/
