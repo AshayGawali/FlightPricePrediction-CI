@@ -8,158 +8,67 @@ pipeline {
         IMAGE_NAME = "${DOCKER_USER}/${APP_NAME}"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
         JENKINS_API_TOKEN = credentials("JENKINS_API_TOKEN")
-        JENKINS_MASTER_URL = "https://ec2-3-111-214-208.ap-south-1.compute.amazonaws.com:8080"
+        JENKINS_MASTER_DNS_URL = "ec2-3-111-214-208.ap-south-1.compute.amazonaws.com"
         CD_JOB_NAME = "FlightPricePrediction-CD"
-        EMAIL_RECIPIENT = "gawali.ashay@gmail.com"
     }
-    
     stages {
         stage("Cleanup Workspace") {
             steps {
                 cleanWs()
             }
         }
-
         stage("Checkout from SCM") {
             steps {
-                git branch: 'main', 
-                credentialsId: 'GitHub', 
-                url: 'https://github.com/gawaliashay/FlightPricePrediction-CI'
+                git branch: 'main', credentialsId: 'GitHub', url: 'https://github.com/gawaliashay/FlightPricePrediction-CI'
             }
         }
-
         stage("Build & Push Docker Image") {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'DockerHub', 
-                    usernameVariable: 'DOCKER_USER', 
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    script {
-                        try {
-                            def imageName = "${DOCKER_USER}/${APP_NAME}"
-                            echo "Building Docker image: ${imageName}"
-                            def dockerImage = docker.build(imageName)
-                            
-                            echo "Pushing image with tag: ${IMAGE_TAG}"
-                            docker.withRegistry('', 'DockerHub') {
-                                dockerImage.push("${IMAGE_TAG}")
-                                dockerImage.push("latest")
-                            }
-                        } catch (Exception e) {
-                            echo "Docker operation failed: ${e.getMessage()}"
-                            currentBuild.result = 'FAILURE'
-                            error("Docker build/push failed")
-                        }
+                script {
+                    docker.withRegistry('', DOCKER_PASS) {
+                        docker_image = docker.build "${IMAGE_NAME}"
+                    }
+                    docker.withRegistry('', DOCKER_PASS) {
+                        docker_image.push("${IMAGE_TAG}")
+                        docker_image.push("latest")
                     }
                 }
             }
         }
-
-        stage("Trivy Security Scan") {
+        stage("Trivy Scan") {
             steps {
                 script {
-                    try {
-                        withCredentials([usernamePassword(
-                            credentialsId: 'DockerHub', 
-                            usernameVariable: 'DOCKER_USER', 
-                            passwordVariable: 'DOCKER_PASS'
-                        )]) {
-                            def imageName = "${DOCKER_USER}/${APP_NAME}"
-                            echo "Scanning image for vulnerabilities: ${imageName}:latest"
-                            
-                            // Run Trivy scan but don't fail the pipeline
-                            def scanResult = sh(
-                                script: """
-                                    docker run -v /var/run/docker.sock:/var/run/docker.sock \
-                                    aquasec/trivy image ${imageName}:latest \
-                                    --no-progress --scanners vuln \
-                                    --severity HIGH,CRITICAL --format table
-                                """,
-                                returnStatus: true
-                            )
-                            
-                            if (scanResult != 0) {
-                                echo "WARNING: Vulnerabilities found in the image"
-                                currentBuild.result = 'UNSTABLE'
-                            }
-                        }
-                    } catch (Exception e) {
-                        echo "Trivy scan failed: ${e.getMessage()}"
-                        currentBuild.result = 'FAILURE'
-                    }
+                    sh ('docker run -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image ${IMAGE_NAME}:latest --no-progress --scanners vuln  --exit-code 0 --severity HIGH,CRITICAL --format table')
                 }
             }
         }
-
-        stage("Cleanup Docker Artifacts") {
-            when {
-                expression { currentBuild.result != 'FAILURE' }
-            }
+        stage ('Cleanup Artifacts') {
             steps {
-                withCredentials([usernamePassword(
-                    credentialsId: 'DockerHub', 
-                    usernameVariable: 'DOCKER_USER', 
-                    passwordVariable: 'DOCKER_PASS'
-                )]) {
-                    script {
-                        def imageName = "${DOCKER_USER}/${APP_NAME}"
-                        echo "Cleaning up Docker artifacts"
-                        sh """
-                            docker rmi ${imageName}:${IMAGE_TAG} || echo "Failed to remove ${IMAGE_TAG}"
-                            docker rmi ${imageName}:latest || echo "Failed to remove latest"
-                            docker system prune -f || echo "Docker prune failed"
-                        """
-                    }
+                script {
+                    sh "docker rmi ${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker rmi ${IMAGE_NAME}:latest"
                 }
             }
-        }
-/*
+        }/*
         stage("Trigger CD Pipeline") {
-    steps {
-        withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
-            script {
-                echo "Attempting to trigger CD pipeline with IMAGE_TAG=${IMAGE_TAG}"
-                
-                // Secure way to handle the curl command with credentials
-                def response = sh(
-                    script: """
-                        curl -sS -k -w '%{http_code}' \
-                        --user admin:${JENKINS_API_TOKEN} \
-                        -X POST \
-                        -H 'cache-control: no-cache' \
-                        -H 'content-type: application/x-www-form-urlencoded' \
-                        --data 'IMAGE_TAG=${IMAGE_TAG}' \
-                        '${JENKINS_MASTER_URL}/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN' \
-                        -o /dev/null
-                    """,
-                    returnStdout: true
-                ).trim()
-                
-                // Check the HTTP status code
-                if (response != "201" && response != "200") {
-                    error("Failed to trigger CD pipeline - HTTP status ${response}")
-                } else {
-                    echo "Successfully triggered CD pipeline (HTTP ${response})"
+            steps {
+                script {
+                    sh "curl -v -k --user admin:${JENKINS_API_TOKEN} -X POST -H 'cache-control: no-cache' -H 'content-type: application/x-www-form-urlencoded' --data 'IMAGE_TAG=${IMAGE_TAG}' '${JENKINS_MASTER_DNS_URL}:8080/job/${CD_JOB_NAME}/buildWithParameters?token=MLOPS-TOKEN'"
+                    /*curl --user "username:<JENKINS_API_TOKEN>" -X POST -H "Content-Type: application/x-www-form-urlencoded" --data "parameter_name=parameter_value" "<jenkinsMaster_url>/job/<job_name>/buildWithParameters?token=<your_api_token>&<parameter_name>=<parameter_value>" */
                 }
             }
         }
     }
-}
     post {
-        always {
-            cleanWs()
-            script {
-                def subject = "${env.JOB_NAME} - Build #${env.BUILD_NUMBER} - ${currentBuild.result}"
-                emailext(
-                    subject: subject,
-                    body: """<p>Build Status: ${currentBuild.result}</p>
-                            <p>Check console output at <a href="${env.BUILD_URL}">${env.JOB_NAME} #${env.BUILD_NUMBER}</a></p>""",
-                    mimeType: 'text/html',
-                    to: env.EMAIL_RECIPIENT
-                )
-            }
+        failure {
+            emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+            subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - Failed",
+            mimeType: 'text/html', to: "gawali.ashay@gmail.com"
+        }
+        success {
+            emailext body: '''${SCRIPT, template="groovy-html.template"}''',
+            subject: "${env.JOB_NAME} - Build # ${env.BUILD_NUMBER} - Successful",
+            mimeType: 'text/html', to: "gawali.ashay@gmail.com"
         }
     }*/
-}
 }
