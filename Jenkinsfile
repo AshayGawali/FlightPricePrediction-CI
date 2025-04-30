@@ -4,7 +4,7 @@ pipeline {
         APP_NAME = "airline"
         RELEASE = "1.0.0"
         IMAGE_TAG = "${RELEASE}-${BUILD_NUMBER}"
-        JENKINS_MASTER_URL = "http://ec2-13-232-237-15.ap-south-1.compute.amazonaws.com:8080"
+        JENKINS_MASTER_URL = "https://ec2-3-111-214-208.ap-south-1.compute.amazonaws.com:8080"
         CD_JOB_NAME = "FlightPricePrediction-CD"
         EMAIL_RECIPIENT = "gawali.ashay@gmail.com"
     }
