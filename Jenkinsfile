@@ -110,7 +110,7 @@ pipeline {
                 }
             }
         }
-
+/*
         stage("Trigger CD Pipeline") {
     steps {
         withCredentials([string(credentialsId: 'JENKINS_API_TOKEN', variable: 'JENKINS_API_TOKEN')]) {
@@ -141,7 +141,7 @@ pipeline {
             }
         }
     }
-}/*
+}
     post {
         always {
             cleanWs()
